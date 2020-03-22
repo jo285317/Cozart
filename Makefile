@@ -16,7 +16,8 @@ build-db:
 		gawk -f postproc-fndb.awk >filename.db
 
 setup-linux:
-	# git clone --depth=1 git://kernel.ubuntu.com/ubuntu/linux.git $(linux)
+	wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.5.5.tar.xz
+	tar -xf linux-5.5.5.tar.xz
 	make remove-makefile-escaped-newlines
 	# cp $(linux)/debian/scripts/retpoline-extract-one $(linux)/scripts/ubuntu-retpoline-extract-one
 
