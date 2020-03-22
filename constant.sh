@@ -9,9 +9,9 @@ export cores="4"
 export mem="8G"
 export whoami=$(whoami)
 export kernelbuild="$workdir/kernelbuild"
-
+export CC=gcc
 # for python pkg kconfiglib
-export srctree="linux-cosmic"
+export srctree="linux-5.5.5"
 export SRCARCH="x86"
 export ARCH="x86"
 
@@ -19,11 +19,11 @@ export ARCH="x86"
 # A Linux version has multiple base configurations.
 # A base configuration has multiple applications.
 #
-
-export linux="linux-cosmic"
+export version="5.5.5"
+export linux="linux-5.5.5"
 # default is the kernel defconfig
 
-export base="cosmic"
+export base="vanilla"
 
 rebase-linuxdir() {
     sed -r "s/.+$linux/$linux/"

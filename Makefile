@@ -2,21 +2,23 @@
 echo-env:
 	@echo "linux=$(linux)"
 	@echo "base=$(base)"
+	@echo "kbuild=$(kernelbuild)"
 
 remove-makefile-escaped-newlines:
+	@echo "linux=$(linux)"
 	find $(linux) -name Makefile | \
 		xargs sed -i ':a;N;$!ba;s/\\\n/ /g'
 
 build-db:
 	./directive-extracter.sh $(linux) >directives.db
 	find $(linux) -name Makefile \
-		| xargs awk -f extract-makefile.awk | sort -u -t' ' -k2,2 -k1,1 -r | \
-		awk -f postproc-fndb.awk >filename.db
+		| xargs gawk -f extract-makefile.awk | sort -u -t' ' -k2,2 -k1,1 -r | \
+		gawk -f postproc-fndb.awk >filename.db
 
 setup-linux:
-	git clone --depth=1 git://kernel.ubuntu.com/ubuntu/linux.git $(linux)
+	# git clone --depth=1 git://kernel.ubuntu.com/ubuntu/linux.git $(linux)
 	make remove-makefile-escaped-newlines
-	cp $(linux)/debian/scripts/retpoline-extract-one $(linux)/scripts/ubuntu-retpoline-extract-one
+	# cp $(linux)/debian/scripts/retpoline-extract-one $(linux)/scripts/ubuntu-retpoline-extract-one
 
 setup-qemu:
 	-git clone --depth 1 -b stable-2.12 https://github.com/qemu/qemu.git
@@ -28,6 +30,7 @@ setup-qemu:
 		make -j`nproc`
 
 build-base:
+	##
 	mkdir -p $(kernelbuild)/$(linux)/$(base)/base
 	cd $(linux) && \
 		cp ../config-db/$(linux)/$(base)/base.config .config && \
@@ -50,6 +53,10 @@ clean:
 rm-disk:
 	rm $(disk)
 
+do-mount:
+	-sudo umount --recursive $(mnt)
+	sudo mount -o loop $(disk) $(mnt)
+
 install-kernel-modules:
 	-sudo umount --recursive $(mnt)
 	sudo mount -o loop $(disk) $(mnt)
@@ -58,12 +65,14 @@ install-kernel-modules:
 	-sudo umount --recursive $(mnt)
 
 debootstrap: $(disk) $(mnt)
+	@echo "disk=$(disk)"
+	@echo "mnt=$(mnt)"
 	-sudo umount --recursive $(mnt)
 	sudo mkfs.ext4 $(disk)
 	sudo mount -o loop $(disk) $(mnt)
 	sudo debootstrap --components=main,universe \
 		--include="build-essential vim kmod net-tools apache2 apache2-utils haveged cgroupfs-mount iptables libltdl7 redis-server redis-tools nginx sysbench php memcached" \
-		--arch=amd64 cosmic $(mnt) http://archive.ubuntu.com/ubuntu
+		--arch=amd64 cosmic $(mnt) http://old-releases.ubuntu.com/ubuntu
 	sudo umount --recursive $(mnt)
 	make install-docker install-mark sync-scripts
 

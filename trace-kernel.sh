@@ -1,5 +1,5 @@
 #!/bin/bash
-source constant.sh
+
 
 help() {
     echo "./trace-kernel.sh initProgram [local=true]"
@@ -15,10 +15,24 @@ trace-kernel() {
         awkoption=""
     fi
     make clean
+
+
+
+    echo "qemubin" $qemubin
+    echo "cores" $cores
+    echo "mem" $mem
+    echo "cpu" $cpu
+    echo "kernelbuild" $kernelbuild
+    echo "linux" $linux
+    echo "base" $base
+    echo "workdir" $workdir
+    echo "awkoption" $awkoption
+
+
     # rawtrace=$(mktemp --tmpdir=/tmp cozart-XXXXX)
-    $qemubin -trace exec_tb_block -smp $cores -m $mem -cpu $cpu \
+     $qemubin -trace exec_tb_block -smp $cores -m $mem -cpu $cpu \
         -drive file="$workdir/qemu-disk.ext4,if=ide,format=raw" \
-        -kernel $kernelbuild/$linux/$base/base/vmlinuz* -nographic -no-reboot \
+        -kernel $kernelbuild/$linux/$base/base/vmlinuz-$version-$linux-$base-base -nographic -no-reboot \
         -append "nokaslr panic=-1 console=ttyS0 root=/dev/sda rw init=$1" \
         3>&1 1>trace-stdout.tmp 2>&3 | awk $awkoption --file extract-trace.awk > unsorted-trace.tmp
 
@@ -67,4 +81,3 @@ if (test $# -ne 1) && (test $# -ne 2); then
 fi
 
 trace-kernel $@
-
